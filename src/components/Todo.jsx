@@ -1,30 +1,45 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Input, Space } from "antd";
 import ManageTodo from "./Todo/ManageTodo";
-import { columns } from "./common/common";
 import TodoItem from "./Todo/TodoItem";
 import { useSelector, useDispatch } from "react-redux";
-import { addTodo } from "../redux/reducers/todoSlice";
+import { addTodo, getTodoLocal, updateTodo } from "../redux/reducers/todoSlice";
 
 const Todo = () => {
   const dispatch = useDispatch();
-  console.log(listTodo, "count");
-  const { listTodo } = useSelector((state) => state.todoSlice);
-  // rồi ông
+  const { listTodo, editTodo } = useSelector((state) => state.todoSlice);
   const [newTodo, setNewTodo] = useState("");
-  const dataSource = [
-    {
-      key: 1,
-      name: "name",
-      completed: false,
-      important: false,
-    },
-  ];
 
-  const handleAddTodo = () => {
+  const dataSource = listTodo.map((item) => ({
+    key: item.id,
+    name: item.name,
+    completed: false,
+    important: false,
+  }));
+
+  useEffect(() => {
+    const getTodo = JSON.parse(localStorage.getItem("todo"));
+    if (getTodo) {
+      const action = getTodoLocal(getTodo);
+      dispatch(action);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (editTodo !== null) {
+      setNewTodo(editTodo.name);
+    }
+  }, [editTodo]);
+
+  const handleSubmit = () => {
     if (newTodo.trim()) {
-      dispatch(addTodo(newTodo.trim()));
-      setNewTodo("");
+      if (editTodo !== null) {
+        dispatch(updateTodo(editTodo));
+        setNewTodo("");
+      } else {
+        dispatch(addTodo(newTodo.trim()));
+        setNewTodo("");
+      }
     }
   };
 
@@ -41,13 +56,17 @@ const Todo = () => {
               width: 304,
             }}
           />
-          <Button onClick={() => handleAddTodo()}>Add</Button>
+          {editTodo !== null ? (
+            <Button onClick={() => handleSubmit()}>Update</Button>
+          ) : (
+            <Button onClick={() => handleSubmit()}>Add</Button>
+          )}
         </Space>
       </header>
       {/* search && filter */}
       <ManageTodo />
       {/* data todo */}
-      <TodoItem columns={columns} dataSource={dataSource} />
+      <TodoItem dataSource={dataSource} />
     </div>
   );
 };
