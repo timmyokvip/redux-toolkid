@@ -1,17 +1,37 @@
-import { Space, Table, Tag } from "antd";
-import React from "react";
+import { Space, Table, Tag, message } from "antd";
+import React, { useEffect } from "react";
 import {
   EditOutlined,
   DeleteOutlined,
   CheckOutlined,
   ExclamationOutlined,
 } from "@ant-design/icons";
-import { useDispatch } from "react-redux";
-import { setEditTodo } from "../../redux/reducers/todoSlice";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  completedTodo,
+  deleteTodo,
+  getTodoLocal,
+  importantTodo,
+  setEditTodo,
+} from "../../redux/reducers/todoSlice";
 
-const TodoItem = (props) => {
-  const { dataSource } = props;
+const TodoItem = () => {
   const dispatch = useDispatch();
+  const { listTodo } = useSelector((state) => state.todoSlice);
+  const dataSource = listTodo.map((item) => ({
+    key: item.id,
+    name: item.name,
+    completed: item.completed,
+    important: item.important,
+  }));
+
+  useEffect(() => {
+    const getTodo = JSON.parse(localStorage.getItem("todo"));
+    if (getTodo) {
+      const action = getTodoLocal(getTodo);
+      dispatch(action);
+    }
+  }, []);
 
   const columns = [
     {
@@ -44,16 +64,20 @@ const TodoItem = (props) => {
       key: "action",
       render: (text, data, index) => (
         <Space size="middle">
-          <button>
+          <button onClick={() => dispatch(completedTodo(data))}>
             <CheckOutlined className="text-2xl text-blue-400" />
           </button>
-          <button>
+          <button onClick={() => dispatch(importantTodo(data))}>
             <ExclamationOutlined className="text-2xl text-red-600" />
           </button>
           <button onClick={() => dispatch(setEditTodo(data))}>
             <EditOutlined className="text-2xl text-yellow-400" />
           </button>
-          <button>
+          <button
+            onClick={() => (
+              dispatch(deleteTodo(data)), message.success("Xóa thành công !!!")
+            )}
+          >
             <DeleteOutlined className="text-2xl text-red-400" />
           </button>
         </Space>

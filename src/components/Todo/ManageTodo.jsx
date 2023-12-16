@@ -12,10 +12,10 @@ const ManageTodo = () => {
   };
 
   return (
-    <Space>
+    <Space className="mb-6">
       <Input
         addonBefore={<SearchOutlined />}
-        placeholder="Tìm kiếm tên và email..."
+        placeholder="Tìm kiếm..."
         onChange={(e) => onSearch(e.target.value)}
         allowClear
         value={search}
